@@ -45,9 +45,10 @@ fn main() {
     shader_program.set_used();
 
     let vertices: Vec<f32> = vec![
-        -0.5, -0.5, 0.0,
-        0.5, -0.5, 0.0,
-        0.0, 0.5, 0.0
+        // positions      //colors
+        -0.5, -0.5, 0.0,  1.0, 0.0, 0.0, //bottom right
+        0.5, -0.5, 0.0,   0.0, 1.0, 0.0, // bottom left
+        0.0, 0.5, 0.0,    0.0, 0.0, 1.0  // top
     ];
     let mut vbo: gl::types::GLuint = 0;
     unsafe {
@@ -67,20 +68,34 @@ fn main() {
         gl::GenVertexArrays(1, &mut vao);
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // Rebinding the vbo is wasteful here, done to show need for vbo
+
         gl::EnableVertexAttribArray(0); //layout (location = 0) in vertex shader_program
         gl::VertexAttribPointer(
-            0, // index of the generix vertex attribute
-            3, // Number of components per generic vertex attribute
+            0, // index of the position vertex attribute
+            3, // Number of components per position vertex attribute
             gl::FLOAT, // data type
             gl::FALSE, // don't normalize (int-to-float conversion)
-            (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride
+            (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride
             std::ptr::null() // offset of first component
         );
+
+        gl::EnableVertexAttribArray(1); //layout (location = 1) in vertex shader program
+        gl::VertexAttribPointer(
+            1, // index of the color vertex attribute
+            3, // number of components per color vertex attribute
+            gl::FLOAT, // data type
+            gl::FALSE, // not normalized
+            (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride
+            (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid // offset of the first component
+        );
+
         // unbind both vbo and vba
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         gl::BindVertexArray(0);
     }
 
+    // Wireframe mode
+    // unsafe { gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE); }
 
     'main: loop {
         for event in event_pump.poll_iter() {

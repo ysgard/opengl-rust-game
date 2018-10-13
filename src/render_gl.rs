@@ -94,9 +94,9 @@ impl Drop for Shader {
 
 fn shader_from_source(
     source: &CStr,
-    kind: gl::types::GLuint
+    kind: gl::types::GLenum
 ) -> Result<gl::types::GLuint, String> {
-    let id = unsafe { gl::CreateShader(gl::VERTEX_SHADER) };
+    let id = unsafe { gl::CreateShader(kind) };
     unsafe {
         gl::ShaderSource(id, 1, &source.as_ptr(), std::ptr::null());
         gl::CompileShader(id);

@@ -12,7 +12,7 @@ fn main() {
 
     // Set minimal version of OpenGL to use
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-    gl_attr.set_context_version(4, 1);
+    gl_attr.set_context_version(3, 3);
 
     let window = video_subsystem
         .window("Game", 900, 700)
@@ -44,6 +44,44 @@ fn main() {
 
     shader_program.set_used();
 
+    let vertices: Vec<f32> = vec![
+        -0.5, -0.5, 0.0,
+        0.5, -0.5, 0.0,
+        0.0, 0.5, 0.0
+    ];
+    let mut vbo: gl::types::GLuint = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // Bind the vbo buffer to ARRAY_BUFFER target
+        gl::BufferData(
+            gl::ARRAY_BUFFER, // target
+            (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+            vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+            gl::STATIC_DRAW, // usage
+        );
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
+    }
+
+    let mut vao: gl::types::GLuint = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // Rebinding the vbo is wasteful here, done to show need for vbo
+        gl::EnableVertexAttribArray(0); //layout (location = 0) in vertex shader_program
+        gl::VertexAttribPointer(
+            0, // index of the generix vertex attribute
+            3, // Number of components per generic vertex attribute
+            gl::FLOAT, // data type
+            gl::FALSE, // don't normalize (int-to-float conversion)
+            (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride
+            std::ptr::null() // offset of first component
+        );
+        // unbind both vbo and vba
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        gl::BindVertexArray(0);
+    }
+
+
     'main: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -54,6 +92,17 @@ fn main() {
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
+        // Draw the triangle
+        shader_program.set_used();
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(
+                gl::TRIANGLES, // mode
+                0, // starting index in the enabled arrays
+                3 // Number of indices to be rendered
+            );
         }
 
         window.gl_swap_window();

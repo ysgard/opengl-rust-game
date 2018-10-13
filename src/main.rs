@@ -46,21 +46,37 @@ fn main() {
 
     let vertices: Vec<f32> = vec![
         // positions      //colors
-        -0.5, -0.5, 0.0,  1.0, 0.0, 0.0, //bottom right
-        0.5, -0.5, 0.0,   0.0, 1.0, 0.0, // bottom left
-        0.0, 0.5, 0.0,    0.0, 0.0, 1.0  // top
+        -0.75, -0.5, 0.0,  1.0, 0.0, 0.0, //bottom right
+        0.25, -0.5, 0.0,   0.0, 1.0, 0.0, // bottom left
+        -0.25, 0.5, 0.0,    0.0, 0.0, 1.0,  // top
+        0.75, 0.5, 0.0,    1.0, 0.0, 0.0   // top right
     ];
-    let mut vbo: gl::types::GLuint = 0;
+    let indices: Vec<u32> = vec![
+        0, 1, 2, // first triangle
+        1, 2, 3, // second triangle
+    ];
+
+    let mut vbo: gl::types::GLuint = 0;  // Vertex Buffer Object (verices)
+    let mut ebo: gl::types::GLuint = 0;  // Element Buffer Object (indices)
     unsafe {
         gl::GenBuffers(1, &mut vbo);
+        gl::GenBuffers(1, &mut ebo);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // Bind the vbo buffer to ARRAY_BUFFER target
+        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo); // Bind the ebo to ELEMENT_ARRAY_BUFFER
         gl::BufferData(
             gl::ARRAY_BUFFER, // target
             (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
             vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
             gl::STATIC_DRAW, // usage
         );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
+        gl::BufferData(
+            gl::ELEMENT_ARRAY_BUFFER, // target
+            (indices.len() * std::mem::size_of::<u32>()) as gl::types::GLsizeiptr, // size of data in bytes
+            indices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+            gl::STATIC_DRAW, // usage
+        );
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffers
+        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
     }
 
     let mut vao: gl::types::GLuint = 0;
@@ -109,14 +125,16 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        // Draw the triangle
+        // Draw the triangles
         shader_program.set_used();
         unsafe {
             gl::BindVertexArray(vao);
-            gl::DrawArrays(
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+            gl::DrawElements(
                 gl::TRIANGLES, // mode
-                0, // starting index in the enabled arrays
-                3 // Number of indices to be rendered
+                6, // number of elements we want to draw (6 indices, so 6 elements)
+                gl::UNSIGNED_INT, // Type of the indices
+                std::ptr::null() // offset into the indices
             );
         }
 

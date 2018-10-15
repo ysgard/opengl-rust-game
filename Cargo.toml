@@ -5,5 +5,5 @@ authors = ["Ysgard <ysgard@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-gl = "0.10.0"
+gl = { path = "lib/gl" }
 sdl2 = { version = ">= 0.31.0", features = ["bundled", "static-link"] }

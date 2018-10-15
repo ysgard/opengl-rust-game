@@ -22,24 +22,24 @@ fn main() {
         .unwrap();
 
     let gl_context = window.gl_create_context().unwrap();
-    let gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+    let gl = gl::Gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     let mut event_pump = sdl.event_pump().unwrap();
 
     unsafe {
-        gl::Viewport(0, 0, 900, 700);
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        gl.Viewport(0, 0, 900, 700);
+        gl.ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
     let vert_shader = render_gl::Shader::from_vert_source(
-        &CString::new(include_str!("triangle.vert")).unwrap()
+        gl.clone(), &CString::new(include_str!("triangle.vert")).unwrap()
     ).unwrap();
     let frag_shader = render_gl::Shader::from_frag_source(
-        &CString::new(include_str!("triangle.frag")).unwrap()
+        gl.clone(), &CString::new(include_str!("triangle.frag")).unwrap()
     ).unwrap();
 
     let shader_program = render_gl::Program::from_shaders(
-        &[vert_shader, frag_shader]
+        gl.clone(), &[vert_shader, frag_shader]
     ).unwrap();
 
     shader_program.set_used();
@@ -59,34 +59,34 @@ fn main() {
     let mut vbo: gl::types::GLuint = 0;  // Vertex Buffer Object (verices)
     let mut ebo: gl::types::GLuint = 0;  // Element Buffer Object (indices)
     unsafe {
-        gl::GenBuffers(1, &mut vbo);
-        gl::GenBuffers(1, &mut ebo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // Bind the vbo buffer to ARRAY_BUFFER target
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo); // Bind the ebo to ELEMENT_ARRAY_BUFFER
-        gl::BufferData(
+        gl.GenBuffers(1, &mut vbo);
+        gl.GenBuffers(1, &mut ebo);
+        gl.BindBuffer(gl::ARRAY_BUFFER, vbo); // Bind the vbo buffer to ARRAY_BUFFER target
+        gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo); // Bind the ebo to ELEMENT_ARRAY_BUFFER
+        gl.BufferData(
             gl::ARRAY_BUFFER, // target
             (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
             vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
             gl::STATIC_DRAW, // usage
         );
-        gl::BufferData(
+        gl.BufferData(
             gl::ELEMENT_ARRAY_BUFFER, // target
             (indices.len() * std::mem::size_of::<u32>()) as gl::types::GLsizeiptr, // size of data in bytes
             indices.as_ptr() as *const gl::types::GLvoid, // pointer to data
             gl::STATIC_DRAW, // usage
         );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffers
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+        gl.BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffers
+        gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
     }
 
     let mut vao: gl::types::GLuint = 0;
     unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // Rebinding the vbo is wasteful here, done to show need for vbo
+        gl.GenVertexArrays(1, &mut vao);
+        gl.BindVertexArray(vao);
+        gl.BindBuffer(gl::ARRAY_BUFFER, vbo); // Rebinding the vbo is wasteful here, done to show need for vbo
 
-        gl::EnableVertexAttribArray(0); //layout (location = 0) in vertex shader_program
-        gl::VertexAttribPointer(
+        gl.EnableVertexAttribArray(0); //layout (location = 0) in vertex shader_program
+        gl.VertexAttribPointer(
             0, // index of the position vertex attribute
             3, // Number of components per position vertex attribute
             gl::FLOAT, // data type
@@ -95,8 +95,8 @@ fn main() {
             std::ptr::null() // offset of first component
         );
 
-        gl::EnableVertexAttribArray(1); //layout (location = 1) in vertex shader program
-        gl::VertexAttribPointer(
+        gl.EnableVertexAttribArray(1); //layout (location = 1) in vertex shader program
+        gl.VertexAttribPointer(
             1, // index of the color vertex attribute
             3, // number of components per color vertex attribute
             gl::FLOAT, // data type
@@ -106,9 +106,11 @@ fn main() {
         );
 
         // unbind both vbo and vba
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
+        gl.BindBuffer(gl::ARRAY_BUFFER, 0);
+        gl.BindVertexArray(0);
     }
+
+    println!("size of Gl: {}", std::mem::size_of_val(&gl));
 
     // Wireframe mode
     // unsafe { gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE); }
@@ -122,15 +124,15 @@ fn main() {
         }
 
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl.Clear(gl::COLOR_BUFFER_BIT);
         }
 
         // Draw the triangles
         shader_program.set_used();
         unsafe {
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-            gl::DrawElements(
+            gl.BindVertexArray(vao);
+            gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+            gl.DrawElements(
                 gl::TRIANGLES, // mode
                 6, // number of elements we want to draw (6 indices, so 6 elements)
                 gl::UNSIGNED_INT, // Type of the indices

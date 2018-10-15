@@ -29,3 +29,5 @@ impl Deref for Gl {
         &self.inner
     }
 }
+
+pub use self::bindings::Gl as InnerGl;

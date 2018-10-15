@@ -8,7 +8,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn from_shaders(gl: gl::Gl, shaders: &[Shader]) -> Result<Program, String> {
+    pub fn from_shaders(gl: &gl::Gl, shaders: &[Shader]) -> Result<Program, String> {
         let program_id = unsafe { gl.CreateProgram() };
 
         for shader in shaders {
@@ -40,7 +40,7 @@ impl Program {
         for shader in shaders {
             unsafe { gl.DetachShader(program_id, shader.id()); }
         }
-        Ok(Program { gl, id: program_id })
+        Ok(Program { gl: gl.clone(), id: program_id })
     }
 
     pub fn id(&self) -> gl::types::GLuint {
@@ -65,19 +65,19 @@ pub struct Shader {
 
 impl Shader {
     pub fn from_source(
-        gl: gl::Gl,
+        gl: &gl::Gl,
         source: &CStr,
         kind: gl::types::GLenum
     ) -> Result<Shader, String> {
         let id = shader_from_source(&gl, source, kind)?;
-        Ok(Shader { gl, id })
+        Ok(Shader { gl: gl.clone(), id: id })
     }
 
-    pub fn from_vert_source(gl: gl::Gl, source: &CStr) -> Result<Shader, String> {
+    pub fn from_vert_source(gl: &gl::Gl, source: &CStr) -> Result<Shader, String> {
         Shader::from_source(gl, source, gl::VERTEX_SHADER)
     }
 
-    pub fn from_frag_source(gl: gl::Gl, source: &CStr) -> Result<Shader, String> {
+    pub fn from_frag_source(gl: &gl::Gl, source: &CStr) -> Result<Shader, String> {
         Shader::from_source(gl, source, gl::FRAGMENT_SHADER)
     }
 

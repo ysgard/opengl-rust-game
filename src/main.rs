@@ -2,10 +2,14 @@ extern crate gl;
 extern crate sdl2;
 
 pub mod render_gl;
+pub mod resources;
 
 use std::ffi::{CString, CStr};
+use resources::Resources;
+use std::path::Path;
 
 fn main() {
+    let res = Resources::from_relative_exe_path(Path::new("assets")).unwrap();
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
     let gl_attr = video_subsystem.gl_attr();
@@ -38,8 +42,8 @@ fn main() {
         &gl, &CString::new(include_str!("triangle.frag")).unwrap()
     ).unwrap();
 
-    let shader_program = render_gl::Program::from_shaders(
-        &gl, &[vert_shader, frag_shader]
+    let shader_program = render_gl::Program::from_res(
+        &gl, &res, "shaders/triangle"
     ).unwrap();
 
     shader_program.set_used();

@@ -5,7 +5,7 @@ pub mod render_gl;
 pub mod resources;
 
 use std::ffi::{CString, CStr};
-use resources::Resources;
+use self::resources::Resources;
 use std::path::Path;
 
 fn main() {
@@ -25,7 +25,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let gl_context = window.gl_create_context().unwrap();
+    let qgl_context = window.gl_create_context().unwrap();
     let gl = gl::Gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     let mut event_pump = sdl.event_pump().unwrap();

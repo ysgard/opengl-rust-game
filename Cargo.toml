@@ -10,6 +10,7 @@ gl_debug = ["gl/debug"]
 [dependencies]
 gl = { path = "lib/gl" }
 sdl2 = { version = ">= 0.31.0", features = ["bundled", "static-link"] }
+failure = "0.1"
 
 [build-dependencies]
 walkdir = "2.1"
